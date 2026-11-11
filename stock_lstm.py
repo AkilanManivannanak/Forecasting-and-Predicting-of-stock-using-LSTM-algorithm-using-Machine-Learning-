@@ -79,6 +79,16 @@ naive_rmse = math.sqrt(mean_squared_error(y_test_actual, naive))
 print(f'Naive baseline RMSE (tomorrow = today): {naive_rmse:.4f}')
 print(f'LSTM vs naive: {"better" if rmse < naive_rmse else "worse"} by {abs(naive_rmse - rmse):.4f}')
 
+# MAPE and directional accuracy (did the model get the up/down move right vs the previous close?)
+mape = np.mean(np.abs((y_test_actual - predictions) / y_test_actual)) * 100
+naive_mape = np.mean(np.abs((y_test_actual - naive) / y_test_actual)) * 100
+actual_move = y_test_actual - naive
+predicted_move = predictions - naive
+direction_acc = np.mean(np.sign(predicted_move) == np.sign(actual_move)) * 100
+up_share = np.mean(actual_move > 0) * 100
+print(f'MAPE: LSTM {mape:.2f}% | naive {naive_mape:.2f}%')
+print(f'Directional accuracy: LSTM {direction_acc:.1f}% (always guessing "up" scores {up_share:.1f}%)')
+
 # 8. Visualization of Real vs Predicted Prices
 plt.figure(figsize=(12,6))
 plt.plot(y_test_actual, label='Actual Stock Price')
