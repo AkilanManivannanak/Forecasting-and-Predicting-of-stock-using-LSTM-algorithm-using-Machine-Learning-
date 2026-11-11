@@ -7,6 +7,15 @@ from sklearn.metrics import mean_squared_error
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 import math
+import random
+
+import tensorflow as tf
+
+# Reproducible runs (TensorFlow on GPU can still vary slightly)
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
 
 # 1. Data Collection: Download historical stock prices
 stock_symbol = 'AAPL'  # Example stock symbol
