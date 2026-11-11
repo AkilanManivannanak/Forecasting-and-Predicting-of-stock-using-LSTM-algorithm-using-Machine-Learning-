@@ -63,6 +63,13 @@ y_test_actual = scaler.inverse_transform(y_test.reshape(-1, 1))
 rmse = math.sqrt(mean_squared_error(y_test_actual, predictions))
 print(f'Root Mean Squared Error (RMSE): {rmse:.4f}')
 
+# Baseline: predict tomorrow's close = today's close. An LSTM on raw prices is only useful
+# if it beats this.
+naive = scaler.inverse_transform(X_test[:, -1, 0].reshape(-1, 1))
+naive_rmse = math.sqrt(mean_squared_error(y_test_actual, naive))
+print(f'Naive baseline RMSE (tomorrow = today): {naive_rmse:.4f}')
+print(f'LSTM vs naive: {"better" if rmse < naive_rmse else "worse"} by {abs(naive_rmse - rmse):.4f}')
+
 # 8. Visualization of Real vs Predicted Prices
 plt.figure(figsize=(12,6))
 plt.plot(y_test_actual, label='Actual Stock Price')
