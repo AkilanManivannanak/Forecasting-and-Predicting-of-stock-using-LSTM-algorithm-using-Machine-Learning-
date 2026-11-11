@@ -13,9 +13,16 @@ stock_symbol = 'AAPL'  # Example stock symbol
 df = yf.download(stock_symbol, start='2015-01-01', end='2024-01-01')
 data = df[['Close']]  # Using 'Close' price for prediction
 
-# 2. Data Preprocessing: Normalize the 'Close' prices to range (0,1)
+time_step = 60
+# Rows used as training targets: the first 80% of the windows (see step 4).
+split_row = int((len(data) - time_step) * 0.8) + time_step
+
+# 2. Data Preprocessing: Normalize the 'Close' prices to range (0,1).
+# Fit the scaler on the training period only; fitting on all rows would leak the test
+# period's min/max into training.
 scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_data = scaler.fit_transform(data)
+scaler.fit(data[:split_row])
+scaled_data = scaler.transform(data)
 
 # 3. Feature Engineering: Create time-series sequences for training
 def create_dataset(data, time_step=60):
@@ -25,12 +32,11 @@ def create_dataset(data, time_step=60):
         y.append(data[i, 0])
     return np.array(X), np.array(y)
 
-time_step = 60
 X, y = create_dataset(scaled_data, time_step)
 X = X.reshape((X.shape[0], X.shape[1], 1))  # [samples, timesteps, features]
 
-# 4. Split into Training and Testing datasets (80/20)
-split = int(len(X) * 0.8)
+# 4. Split into Training and Testing datasets (80/20, chronological)
+split = split_row - time_step  # same boundary the scaler was fit on
 X_train, X_test = X[:split], X[split:]
 y_train, y_test = y[:split], y[split:]
 
