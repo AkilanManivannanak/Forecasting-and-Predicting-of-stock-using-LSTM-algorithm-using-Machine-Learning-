@@ -6,6 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.callbacks import EarlyStopping
 import math
 import random
 
@@ -60,8 +61,11 @@ model = Sequential([
 # Compile the model
 model.compile(optimizer='adam', loss='mean_squared_error')
 
-# 6. Model Training
-model.fit(X_train, y_train, batch_size=64, epochs=20, verbose=1)
+# 6. Model Training: the last 10% of the training windows (chronologically) are used for
+# validation; training stops when validation loss stops improving and keeps the best weights.
+early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+model.fit(X_train, y_train, batch_size=64, epochs=100, validation_split=0.1,
+          callbacks=[early_stop], verbose=1)
 
 # 7. Model Validation and Prediction
 predictions = model.predict(X_test)
